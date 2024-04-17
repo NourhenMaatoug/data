@@ -1,0 +1,93 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "d9d5efa1-2343-4314-abbb-cb1ace0ff8f6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import radon.complexity as cc\n",
+    "import radon.metrics as rm\n",
+    "import lizard\n",
+    "import os\n",
+    "import csv\n",
+    "\n",
+    "# Fonction pour extraire les métriques Radon\n",
+    "def extract_radon_metrics(file_path):\n",
+    "    with open(file_path, 'r') as f:\n",
+    "        code = f.read()\n",
+    "    cc_results = cc.cc_visit(code)\n",
+    "    mi_results = rm.mi_visit(code)\n",
+    "    return {\n",
+    "        'cyclomatic_complexity': sum(r.complexity for r in cc_results),\n",
+    "        'maintainability_index': mi_results.mi\n",
+    "    }\n",
+    "\n",
+    "# Fonction pour extraire les métriques Lizard\n",
+    "def extract_lizard_metrics(file_path):\n",
+    "    analysis = lizard.analyze_file(file_path)\n",
+    "    return {\n",
+    "        'nloc': analysis.nloc,\n",
+    "        'token_count': analysis.token_count,\n",
+    "        'function_count': len(analysis.function_list),\n",
+    "        'average_cyclomatic_complexity': analysis.average_cyclomatic_complexity\n",
+    "    }\n",
+    "\n",
+    "# Fonction principale pour collecter les données\n",
+    "def collect_data(project_dir, output_file):\n",
+    "    with open(output_file, 'w', newline='') as csvfile:\n",
+    "        fieldnames = ['file_path', 'cyclomatic_complexity', 'maintainability_index', 'nloc', \n",
+    "                      'token_count', 'function_count', 'average_cyclomatic_complexity']\n",
+    "        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)\n",
+    "        writer.writeheader()\n",
+    "        for root, _, files in os.walk(project_dir):\n",
+    "            for file in files:\n",
+    "                if file.endswith('.py'):\n",
+    "                    file_path = os.path.join(root, file)\n",
+    "                    radon_metrics = extract_radon_metrics(file_path)\n",
+    "                    lizard_metrics = extract_lizard_metrics(file_path)\n",
+    "                    data = {\n",
+    "                        'file_path': file_path,\n",
+    "                        **radon_metrics,\n",
+    "                        **lizard_metrics\n",
+    "                    }\n",
+    "                    writer.writerow(data)\n",
+    "\n",
+    "# Exemple d'utilisation\n",
+    "project_dir = 'C:\\\\Users\\\\norhe\\\\Downloads\\\\JApicGwtp-master'\n",
+    "output_file = 'VoHighlighText.csv'\n",
+    "collect_data(project_dir, output_file)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6d16857d-5595-4fb9-9021-7f9d2ece2243",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.7"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
